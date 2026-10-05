@@ -1,10 +1,17 @@
-# App runtime. Versions pinned because models/*.pkl are unpickled at startup
-# and scikit-learn warns (or breaks) across minor versions.
-streamlit==1.65.0
+# App runtime.
+#
+# Streamlit Community Cloud runs Python 3.14, so every version floor here is the
+# earliest release that ships a cp314 wheel. Pinning below these forces a source
+# build, and the Cloud image has no gfortran, so scipy cannot compile there.
+#
+# scikit-learn is pinned exactly: models/*.pkl were trained with it and are
+# unpickled at startup, which warns or breaks across minor versions.
 scikit-learn==1.7.2
 joblib==1.6.0
-numpy==2.2.6
-pandas==2.3.3
-scipy==1.15.3
-matplotlib==3.10.9
+streamlit==1.65.0
 seaborn==0.13.2
+numpy>=2.3.2
+pandas>=2.3.3
+matplotlib>=3.10.5
+# scipy intentionally absent: the app never imports it, scikit-learn depends on
+# it, and letting the resolver pick the version avoids the no-wheel trap above.
