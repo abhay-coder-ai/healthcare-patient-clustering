@@ -1,0 +1,4 @@
+,Risk Tier,Patients,Share %,Diabetes+Pre %,Mean BMI,HighBP %,HighChol %,CVD %,DiffWalk %,Mean GenHlth
+Cluster 0,Low Risk,109213,47.5,5.7,26.998,2.9,25.1,1.3,3.2,2.114
+Cluster 1,High Risk,39307,17.1,35.9,31.096,67.6,61.6,29.0,78.8,3.967
+Cluster 2,Moderate Risk,81261,35.4,23.8,29.487,91.9,61.4,13.5,10.0,2.595

@@ -1,0 +1,117 @@
+{
+  "clinical_features": [
+    "HighBP",
+    "HighChol",
+    "BMI",
+    "Stroke",
+    "HeartDiseaseorAttack",
+    "GenHlth",
+    "MentHlth",
+    "PhysHlth",
+    "DiffWalk",
+    "Age",
+    "Smoker",
+    "PhysActivity",
+    "HvyAlcoholConsump"
+  ],
+  "best_k": 3,
+  "cluster_risk": {
+    "0": "Low Risk",
+    "2": "Moderate Risk",
+    "1": "High Risk"
+  },
+  "bmi_cap": [
+    18.0,
+    50.0
+  ],
+  "n_patients": 229781,
+  "metrics": {
+    "silhouette": 0.13298108026879846,
+    "davies_bouldin": 2.3061165277258158,
+    "calinski_harabasz": 33851.902882758666
+  },
+  "feature_ranges": {
+    "HighBP": [
+      0.0,
+      1.0
+    ],
+    "HighChol": [
+      0.0,
+      1.0
+    ],
+    "BMI": [
+      18.0,
+      50.0
+    ],
+    "Stroke": [
+      0.0,
+      1.0
+    ],
+    "HeartDiseaseorAttack": [
+      0.0,
+      1.0
+    ],
+    "GenHlth": [
+      1.0,
+      5.0
+    ],
+    "MentHlth": [
+      0.0,
+      30.0
+    ],
+    "PhysHlth": [
+      0.0,
+      30.0
+    ],
+    "DiffWalk": [
+      0.0,
+      1.0
+    ],
+    "Age": [
+      1.0,
+      13.0
+    ],
+    "Smoker": [
+      0.0,
+      1.0
+    ],
+    "PhysActivity": [
+      0.0,
+      1.0
+    ],
+    "HvyAlcoholConsump": [
+      0.0,
+      1.0
+    ]
+  },
+  "population_mean": {
+    "HighBP": 0.45444140290102314,
+    "HighChol": 0.4417597625565212,
+    "BMI": 28.579490906558853,
+    "Stroke": 0.04475565864888742,
+    "HeartDiseaseorAttack": 0.103215670573285,
+    "GenHlth": 2.601150660846632,
+    "MentHlth": 3.5053725068652324,
+    "PhysHlth": 4.67517766917195,
+    "DiffWalk": 0.1855070697751337,
+    "Age": 8.086582441542165,
+    "Smoker": 0.4656607813526793,
+    "PhysActivity": 0.7333548030516013,
+    "HvyAlcoholConsump": 0.060709980372615664
+  },
+  "population_std": {
+    "HighBP": 0.49792117166742533,
+    "HighChol": 0.49659757145813843,
+    "BMI": 6.17115294602957,
+    "Stroke": 0.20676744358478102,
+    "HeartDiseaseorAttack": 0.30424102082236965,
+    "GenHlth": 1.0646853747421345,
+    "MentHlth": 7.713724910573189,
+    "PhysHlth": 9.046567640200626,
+    "DiffWalk": 0.3887092157369551,
+    "Age": 3.0938088288659333,
+    "Smoker": 0.49882050973082454,
+    "PhysActivity": 0.4422062718966592,
+    "HvyAlcoholConsump": 0.2387980879839654
+  }
+}

@@ -1,0 +1,4 @@
+Cluster,HighBP,HighChol,BMI,Stroke,HeartDiseaseorAttack,GenHlth,MentHlth,PhysHlth,DiffWalk,Age,Smoker,PhysActivity,HvyAlcoholConsump,n_patients
+0,0.029,0.251,26.998,0.007,0.013,2.114,2.543,1.648,0.032,6.633,0.39,0.821,0.071,109213
+1,0.676,0.616,31.096,0.157,0.29,3.967,10.1,19.187,0.788,9.138,0.623,0.447,0.035,39307
+2,0.919,0.614,29.487,0.041,0.135,2.595,1.608,1.724,0.1,9.531,0.492,0.755,0.06,81261
