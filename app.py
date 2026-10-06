@@ -39,7 +39,6 @@ FEATURE_LABELS = {
     "Age": "Age bucket (1-13)",
     "Smoker": "Smoked 100+ cigarettes in life",
     "PhysActivity": "Physical activity in past 30 days",
-    "HvyAlcoholConsump": "Heavy alcohol consumption",
 }
 
 
@@ -60,13 +59,14 @@ def load_tables():
     profile_z = pd.read_csv("models/cluster_profiles_z.csv", index_col=0)
     validation = pd.read_csv("models/cluster_validation.csv", index_col=0)
     scores = pd.read_csv("models/evaluation_scores.csv", index_col=0)
+    algos = pd.read_csv("models/algorithm_comparison.csv")
     sample = pd.read_csv("models/clustered_sample.csv")
-    return profile, profile_z, validation, scores, sample
+    return profile, profile_z, validation, scores, algos, sample
 
 
 try:
     km, scaler, pca, meta = load_model()
-    profile, profile_z, validation, scores, sample = load_tables()
+    profile, profile_z, validation, scores, algos, sample = load_tables()
 except FileNotFoundError:
     st.error(
         "Model artifacts not found. Run every cell of `patient_clustering.ipynb` first — "
@@ -157,16 +157,22 @@ if page == "Overview":
     st.markdown("---")
     st.subheader("Pipeline")
     st.code(
-        """Patient dataset (253,680 BRFSS respondents)
-  -> Data exploration
-  -> Missing value handling (0 nulls; 23,899 duplicate survey rows dropped -> 229,781)
-  -> Outlier investigation (BMI winsorized at 1st/99th pct, patients kept)
-  -> Clinical feature selection (13 features; target + socio-economic dropped)
-  -> Encoding + scaling (StandardScaler; ordinals kept ordered)
-  -> K-Means  |  Hierarchical (Ward)
-  -> Evaluation: Silhouette / Davies-Bouldin / Calinski-Harabasz
-  -> Best: K-Means k=3
-  -> Cluster profiling -> clinical interpretation -> visualization -> insights""",
+        """1. Load dataset (253,680 BRFSS respondents)
+2. Understand & explore data
+3. Preprocessing (0 nulls; 23,899 duplicates dropped; BMI capped at 1st/99th pct;
+   random sample of 10,000 so all three algorithms run on identical data)
+4. Select clinical features (12; target + socio-economic + access dropped)
+5. Feature scaling (StandardScaler; ordinals kept ordered)
+6. Three clustering algorithms
+     K-Means      -> elbow method      -> k = 3
+     Hierarchical -> dendrogram        -> k = 3
+     DBSCAN       -> k-distance graph  -> eps = 2.5
+7. Evaluate all three (Silhouette Score)
+8. Compare models
+9. Best: K-Means k = 3
+10. Visualize clusters
+11. Profile & interpret patient clusters
+12. Final conclusion""",
         language="text",
     )
 
@@ -186,7 +192,9 @@ if page == "Overview":
             "- `AnyHealthcare`, `NoDocbcCost` — healthcare access, not patient health\n"
             "- `Fruits`, `Veggies` — self-reported diet, near-zero correlation with outcome\n"
             "- `CholCheck` — ~96% of patients = 1, almost no variance\n"
-            "- `Sex` — demographic; would split clusters by gender instead of by risk"
+            "- `Sex` — demographic; would split clusters by gender instead of by risk\n"
+            "- `HvyAlcoholConsump` — only ~6% = 1; K-Means carved it into its own cluster, "
+            "hiding the risk structure"
         )
 
 
@@ -320,8 +328,6 @@ elif page == "Patient Risk Assessment":
             phys_act = st.radio("Physical activity in past 30 days", [0, 1],
                                 format_func=lambda v: "Yes" if v else "No",
                                 index=1, horizontal=True)
-            alcohol = st.radio("Heavy alcohol consumption", [0, 1],
-                               format_func=lambda v: "Yes" if v else "No", horizontal=True)
 
         submitted = st.form_submit_button("Assign to cluster", type="primary")
 
@@ -333,7 +339,6 @@ elif page == "Patient Risk Assessment":
             "Stroke": stroke, "HeartDiseaseorAttack": chd, "GenHlth": gen,
             "MentHlth": ment_h, "PhysHlth": phys_h, "DiffWalk": diff_walk,
             "Age": age, "Smoker": smoker, "PhysActivity": phys_act,
-            "HvyAlcoholConsump": alcohol,
         }
         patient = pd.DataFrame([[values[f] for f in FEATURES]], columns=FEATURES)
         scaled = scaler.transform(patient)
@@ -407,55 +412,93 @@ elif page == "Patient Risk Assessment":
 else:
     st.title("Model Evaluation")
 
+    algo_meta = meta["algorithms"]
+
     st.subheader("Final model")
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3 = st.columns(3)
     c1.metric("Algorithm", "K-Means")
-    c2.metric("Silhouette", f"{meta['metrics']['silhouette']:.4f}", help="Higher is better")
-    c3.metric("Davies-Bouldin", f"{meta['metrics']['davies_bouldin']:.4f}",
-              help="Lower is better")
-    c4.metric("Calinski-Harabasz", f"{meta['metrics']['calinski_harabasz']:,.0f}",
-              help="Higher is better")
+    c2.metric("Clusters (k)", meta["best_k"])
+    c3.metric("Silhouette", f"{meta['metrics']['silhouette']:.4f}", help="Higher is better")
 
     st.markdown("---")
-    st.subheader("K-Means vs. Hierarchical across k")
-    st.dataframe(scores, width="stretch")
+    st.subheader("All three algorithms, same 10,000 patients")
+    st.caption(
+        "Silhouette measures how close each patient is to its own cluster versus the "
+        "nearest other cluster. Range -1 to 1, higher is better."
+    )
+    st.dataframe(algos, hide_index=True, width="stretch")
 
-    fig, axes = plt.subplots(1, 3, figsize=(16, 4))
-    pairs = [
-        ("kmeans_silhouette", "hier_silhouette", "Silhouette (higher better)"),
-        ("kmeans_davies_bouldin", "hier_davies_bouldin", "Davies-Bouldin (lower better)"),
-        ("kmeans_calinski_harabasz", "hier_calinski_harabasz", "Calinski-Harabasz (higher better)"),
-    ]
-    for ax, (kcol, hcol, title) in zip(axes, pairs):
-        ax.plot(scores.index, scores[kcol], "o-", label="K-Means")
-        ax.plot(scores.index, scores[hcol], "s--", label="Hierarchical")
-        ax.set_title(title)
-        ax.set_xlabel("k")
-        ax.legend()
-        ax.grid(True)
+    fig, axes = plt.subplots(1, 2, figsize=(14, 4))
+    bar_colors = ["#3498db", "#9b59b6", "#e67e22"]
+    axes[0].bar(algos["Algorithm"], algos["Silhouette"], color=bar_colors)
+    axes[0].set_ylabel("Silhouette Score")
+    axes[0].set_title("Silhouette by algorithm (higher is better)")
+    axes[0].tick_params(axis="x", rotation=15)
+    for i, v in enumerate(algos["Silhouette"]):
+        axes[0].text(i, v + 0.004, f"{v:.3f}", ha="center")
+
+    axes[1].bar(algos["Algorithm"], algos["Largest cluster %"], color=bar_colors)
+    axes[1].axhline(80, color="red", ls="--", label="80% - cluster is the whole cohort")
+    axes[1].set_ylabel("% of patients in the biggest cluster")
+    axes[1].set_title("Cluster balance (lower is better)")
+    axes[1].tick_params(axis="x", rotation=15)
+    axes[1].legend(fontsize=8)
     st.pyplot(fig)
+
+    st.markdown("---")
+    st.subheader("How each algorithm picked its parameter")
+    p1, p2, p3 = st.columns(3)
+    p1.markdown(
+        f"**K-Means — elbow method**\n\n"
+        f"Inertia bends at k = {algo_meta['kmeans']['k']}.\n\n"
+        f"Silhouette: `{algo_meta['kmeans']['silhouette']:.4f}`"
+    )
+    p2.markdown(
+        f"**Hierarchical — dendrogram**\n\n"
+        f"Longest vertical gap splits the tree into {algo_meta['hierarchical']['k']} branches.\n\n"
+        f"Silhouette: `{algo_meta['hierarchical']['silhouette']:.4f}`"
+    )
+    p3.markdown(
+        f"**DBSCAN — k-distance graph**\n\n"
+        f"Knee at eps = {algo_meta['dbscan']['eps']}, min_samples = "
+        f"{algo_meta['dbscan']['min_samples']} "
+        f"({algo_meta['dbscan']['n_clusters']} clusters, "
+        f"{algo_meta['dbscan']['noise']} noise points).\n\n"
+        f"Silhouette: `{algo_meta['dbscan']['silhouette']:.4f}`"
+    )
+
+    st.markdown("---")
+    st.subheader("Silhouette across k")
+    st.caption("DBSCAN is absent because it is not given a number of clusters.")
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.plot(scores.index, scores["kmeans_silhouette"], "o-", label="K-Means")
+    ax.plot(scores.index, scores["hier_silhouette"], "s--", label="Hierarchical")
+    ax.set_xlabel("Number of clusters (k)")
+    ax.set_ylabel("Silhouette Score")
+    ax.legend()
+    ax.grid(True)
+    st.pyplot(fig)
+    st.dataframe(scores, width="stretch")
 
     st.markdown("---")
     st.subheader("Why K-Means with k = 3")
     st.markdown(
-        "**Where K-Means loses.** On an identical 5,000-patient sample at k = 3, Hierarchical "
-        "scores better on silhouette (0.212 vs 0.134) and Davies-Bouldin (2.15 vs 2.27). "
-        "K-Means wins only Calinski-Harabasz (764 vs 657).\n\n"
-        "**Why it was still chosen.**\n"
-        "- **Scalability.** Agglomerative needs the full O(n^2) distance matrix — roughly "
-        "250 GB at this cohort size — so it can only ever be fit on a sample. K-Means fits "
-        "every patient.\n"
-        "- **New-patient assignment.** K-Means leaves behind centroids, so an unseen patient "
-        "is assigned with one distance computation. Agglomerative has no such model; serving "
-        "it would mean refitting the dendrogram per patient. This app requires it.\n"
-        "- **The gap is small and both are low.** Silhouette ~0.13-0.24 means neither found "
-        "well-separated blobs — the structure is a risk continuum. A 0.08 difference does not "
-        "buy enough to give up full-cohort coverage and serving.\n\n"
-        "**Why k = 3.** k = 2 has the best K-Means silhouette (0.257) but collapses into a "
-        "healthy/unhealthy binary with no middle tier — exactly the group where intervention "
-        "still changes the outcome. k = 3 is the elbow and the smallest k that produces that "
-        "tier. k = 6-8 nudges Davies-Bouldin down but fragments the cohort into segments too "
-        "small to staff a care program around."
+        "Silhouette alone would pick Hierarchical (0.249 vs 0.142). The score is misleading "
+        "here: that solution puts **72% of patients in one cluster**, which gives a care team "
+        "nothing to act on. DBSCAN (0.226) has the same problem — 74% in one cluster — and "
+        "additionally labels 566 patients as noise, because it looks for dense blobs separated "
+        "by empty space and health risk is a continuum with no empty space in it.\n\n"
+        "**Why K-Means wins anyway.**\n"
+        "- **Balance.** 17% / 34% / 49% — three segments a care program can actually staff.\n"
+        "- **New-patient assignment.** K-Means leaves behind centroids, so an unseen patient is "
+        "assigned with one distance computation. Hierarchical and DBSCAN produce labels but no "
+        "model, so serving them would mean refitting on every new patient. This app needs it.\n"
+        "- **All three scores are low (0.14-0.25),** which is normal for mixed binary/ordinal "
+        "health data. None of them found well-separated natural groups, so balance and "
+        "usability decide.\n\n"
+        "**Why k = 3.** k = 2 scores higher (0.275) but collapses into a healthy/unhealthy "
+        "binary with no middle tier — exactly the group where intervention still changes the "
+        "outcome. k = 3 is the elbow and the smallest k that produces that tier."
     )
 
     st.subheader("Validation against the held-out label")
@@ -469,6 +512,8 @@ else:
         "self-reported height and weight.\n"
         "- Cross-sectional data, so nothing here is causal — clusters describe co-occurring "
         "risk, not disease progression.\n"
+        "- Built on a random sample of 10,000 of the 229,781 de-duplicated respondents, "
+        "because Hierarchical and DBSCAN need an O(n^2) distance matrix.\n"
         "- Silhouette values are modest, which is normal for mixed binary/ordinal health data "
         "where the true structure is a risk continuum rather than well-separated blobs. "
         "The output is useful **risk strata**, not natural kinds.\n"

@@ -1,0 +1,4 @@
+Algorithm,Clusters,Silhouette,Largest cluster %,Smallest cluster,Noise points
+K-Means (k=3),3,0.1418,49.0,1721,0
+Hierarchical (k=3),3,0.2486,72.1,401,0
+DBSCAN (eps=2.5),5,0.2264,73.9,130,566

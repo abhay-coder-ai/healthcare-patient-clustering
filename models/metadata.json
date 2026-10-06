@@ -11,24 +11,38 @@
     "DiffWalk",
     "Age",
     "Smoker",
-    "PhysActivity",
-    "HvyAlcoholConsump"
+    "PhysActivity"
   ],
   "best_k": 3,
   "cluster_risk": {
-    "0": "Low Risk",
-    "2": "Moderate Risk",
-    "1": "High Risk"
+    "2": "Low Risk",
+    "1": "Moderate Risk",
+    "0": "High Risk"
   },
   "bmi_cap": [
     18.0,
     50.0
   ],
-  "n_patients": 229781,
+  "n_patients": 10000,
   "metrics": {
-    "silhouette": 0.13298108026879846,
-    "davies_bouldin": 2.3061165277258158,
-    "calinski_harabasz": 33851.902882758666
+    "silhouette": 0.14177312897200503
+  },
+  "algorithms": {
+    "kmeans": {
+      "k": 3,
+      "silhouette": 0.14177312897200503
+    },
+    "hierarchical": {
+      "k": 3,
+      "silhouette": 0.24859314603172317
+    },
+    "dbscan": {
+      "eps": 2.5,
+      "min_samples": 24,
+      "n_clusters": 5,
+      "noise": 566,
+      "silhouette": 0.2263665441244875
+    }
   },
   "feature_ranges": {
     "HighBP": [
@@ -78,40 +92,34 @@
     "PhysActivity": [
       0.0,
       1.0
-    ],
-    "HvyAlcoholConsump": [
-      0.0,
-      1.0
     ]
   },
   "population_mean": {
-    "HighBP": 0.45444140290102314,
-    "HighChol": 0.4417597625565212,
-    "BMI": 28.579490906558853,
-    "Stroke": 0.04475565864888742,
-    "HeartDiseaseorAttack": 0.103215670573285,
-    "GenHlth": 2.601150660846632,
-    "MentHlth": 3.5053725068652324,
-    "PhysHlth": 4.67517766917195,
-    "DiffWalk": 0.1855070697751337,
-    "Age": 8.086582441542165,
-    "Smoker": 0.4656607813526793,
-    "PhysActivity": 0.7333548030516013,
-    "HvyAlcoholConsump": 0.060709980372615664
+    "HighBP": 0.4462,
+    "HighChol": 0.4439,
+    "BMI": 28.5649,
+    "Stroke": 0.0401,
+    "HeartDiseaseorAttack": 0.1006,
+    "GenHlth": 2.589,
+    "MentHlth": 3.5528,
+    "PhysHlth": 4.6302,
+    "DiffWalk": 0.1833,
+    "Age": 8.1134,
+    "Smoker": 0.4618,
+    "PhysActivity": 0.7394
   },
   "population_std": {
-    "HighBP": 0.49792117166742533,
-    "HighChol": 0.49659757145813843,
-    "BMI": 6.17115294602957,
-    "Stroke": 0.20676744358478102,
-    "HeartDiseaseorAttack": 0.30424102082236965,
-    "GenHlth": 1.0646853747421345,
-    "MentHlth": 7.713724910573189,
-    "PhysHlth": 9.046567640200626,
-    "DiffWalk": 0.3887092157369551,
-    "Age": 3.0938088288659333,
-    "Smoker": 0.49882050973082454,
-    "PhysActivity": 0.4422062718966592,
-    "HvyAlcoholConsump": 0.2387980879839654
+    "HighBP": 0.4971219900862391,
+    "HighChol": 0.4968676662329466,
+    "BMI": 6.129661105193863,
+    "Stroke": 0.19620356669530345,
+    "HeartDiseaseorAttack": 0.3008133788063405,
+    "GenHlth": 1.0629167320152222,
+    "MentHlth": 7.802467559048291,
+    "PhysHlth": 9.016616765605034,
+    "DiffWalk": 0.386931623944284,
+    "Age": 3.0922640006417574,
+    "Smoker": 0.49856355318219586,
+    "PhysActivity": 0.43898395265780404
   }
 }
