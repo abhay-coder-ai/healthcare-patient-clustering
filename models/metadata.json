@@ -14,11 +14,6 @@
     "PhysActivity"
   ],
   "best_k": 3,
-  "cluster_risk": {
-    "2": "Low Risk",
-    "1": "Moderate Risk",
-    "0": "High Risk"
-  },
   "bmi_cap": [
     18.0,
     50.0
@@ -26,6 +21,11 @@
   "n_patients": 10000,
   "metrics": {
     "silhouette": 0.14177312897200503
+  },
+  "cluster_risk": {
+    "2": "Low Risk",
+    "1": "Moderate Risk",
+    "0": "High Risk"
   },
   "algorithms": {
     "kmeans": {
